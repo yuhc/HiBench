@@ -257,10 +257,10 @@ function run-spark-job() {
         SUBMIT_CMD="${SPARK_HOME}/bin/spark-submit ${LIB_JARS} --properties-file ${SPARK_PROP_CONF} --class ${CLS} --master ${SPARK_MASTER} ${YARN_OPTS} ${SPARKBENCH_JAR} $@"
     fi
     echo -e "${BGreen}Submit Spark job: ${Green}${SUBMIT_CMD}${Color_Off}"
-    MONITOR_PID=`start-monitor`
+    #MONITOR_PID=`start-monitor`
     execute_withlog ${SUBMIT_CMD}
     result=$?
-    stop-monitor ${MONITOR_PID}
+    #stop-monitor ${MONITOR_PID}
     if [ $result -ne 0 ]
     then
         echo -e "${BRed}ERROR${Color_Off}: Spark job ${BYellow}${CLS}${Color_Off} failed to run successfully."
@@ -293,14 +293,14 @@ function run-hadoop-job(){
     local tail_arguments=$@
     local CMD="${HADOOP_EXECUTABLE} --config ${HADOOP_CONF_DIR} jar $job_jar $job_name $tail_arguments"
     echo -e "${BGreen}Submit MapReduce Job: ${Green}$CMD${Color_Off}"
-    if [ ${ENABLE_MONITOR} = 1 ]; then
-        MONITOR_PID=`start-monitor`
-    fi
+#    if [ ${ENABLE_MONITOR} = 1 ]; then
+#        MONITOR_PID=`start-monitor`
+#    fi
     execute_withlog ${CMD}
     result=$?
-    if [ ${ENABLE_MONITOR} = 1 ]; then
-        stop-monitor ${MONITOR_PID}
-    fi
+#    if [ ${ENABLE_MONITOR} = 1 ]; then
+#        stop-monitor ${MONITOR_PID}
+#    fi
     if [ $result -ne 0 ]; then
         echo -e "${BRed}ERROR${Color_Off}: Hadoop job ${BYellow}${job_jar} ${job_name}${Color_Off} failed to run successfully."
         echo -e "${BBlue}Hint${Color_Off}: You can goto ${BYellow}${WORKLOAD_RESULT_FOLDER}/bench.log${Color_Off} to check for detailed log.\nOpening log tail for you:\n"
