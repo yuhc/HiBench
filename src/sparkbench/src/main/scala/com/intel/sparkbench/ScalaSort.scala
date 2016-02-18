@@ -35,6 +35,9 @@ object ScalaSort{
       )
       System.exit(1)
     }
+
+    val t1 = System.nanoTime()
+
     val sparkConf = new SparkConf().setAppName("ScalaSort")
     val sc = new SparkContext(sparkConf)
 
@@ -42,12 +45,28 @@ object ScalaSort{
     val reducer  = IOCommon.getProperty("hibench.default.shuffle.parallelism")
       .getOrElse((parallel / 2).toString).toInt
 
+    val t2 = System.nanoTime()
+
     val io = new IOCommon(sc)
     val data = io.load[String](args(0)).map((_, 1))
+
+    val t3 = System.nanoTime()
+
     val partitioner = new HashPartitioner(partitions = reducer)
     val sorted = data.sortByKeyWithPartitioner(partitioner = partitioner).map(_._1)
 
+    val t4 = System.nanoTime()
+
     io.save(args(1), sorted)
+    val t5 = System.nanoTime()
+
+    val str = "sort benchmark\n" +
+              "Elapsed time: " + (t2 - t1)/1e9 + "s to set up context\n" +
+              "Elapsed time: " + (t3 - t2)/1e9 + "s to load data\n" +
+              "Elapsed time: " + (t4 - t3)/1e9 + "s to finish alogrithm\n" +
+              "Elapsed time: " + (t5 - t4)/1e9 + "s to save the output\n\n"
+    scala.tools.nsc.io.File("sort.result").writeAll(str)
+
     sc.stop()
   }
 }

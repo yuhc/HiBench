@@ -82,13 +82,16 @@ object DenseKMeans {
   }
 
   def run(params: Params) {
+    val t1 = System.nanoTime()
     val conf = new SparkConf().setAppName(s"DenseKMeans with $params")
     val sc = new SparkContext(conf)
 
+    val t2 = System.nanoTime()
     Logger.getRootLogger.setLevel(Level.WARN)
 
     val data = sc.sequenceFile[LongWritable, VectorWritable](params.input)
 
+    val t3 = System.nanoTime()
     val examples = data.map { case (k, v) =>
       var vector: Array[Double] = new Array[Double](v.get().size)
       for (i <- 0 until v.get().size) vector(i) = v.get().get(i)
@@ -117,6 +120,13 @@ object DenseKMeans {
     val cost = model.computeCost(examples)
 
     println(s"Total cost = $cost.")
+
+    val t4 = System.nanoTime()
+    val str = "kmeans benchmark\n" +
+              "Elapsed time: " + (t2 - t1)/1e9 + "s to set up context\n" +
+              "Elapsed time: " + (t3 - t2)/1e9 + "s to load data\n" +
+              "Elapsed time: " + (t4 - t3)/1e9 + "s to finish alogrithm\n\n\n"
+    scala.tools.nsc.io.File("kmeans.result").writeAll(str)
 
     sc.stop()
   }

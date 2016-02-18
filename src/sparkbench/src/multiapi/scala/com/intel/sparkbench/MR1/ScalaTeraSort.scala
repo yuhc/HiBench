@@ -34,11 +34,15 @@ object ScalaTeraSort {
       )
       System.exit(1)
     }
+    val t1 = System.nanoTime()
     val sparkConf = new SparkConf().setAppName("ScalaTeraSort")
     val sc = new SparkContext(sparkConf)
     val io = new IOCommon(sc)
 
+    val t2 = System.nanoTime()
     val file = io.load[String](args(0), Some("Text"))
+
+    val t3 = System.nanoTime()
     val parallel = sc.getConf.getInt("spark.default.parallelism", sc.defaultParallelism)
     val reducer  = IOCommon.getProperty("hibench.default.shuffle.parallelism")
                                         .getOrElse((parallel / 2).toString).toInt
@@ -48,7 +52,17 @@ object ScalaTeraSort {
     val partitioner = new BaseRangePartitioner(partitions = reducer, rdd = data)
     val sorted_data = data.sortByKeyWithPartitioner(partitioner = partitioner)
                           .map{case (k, v) => k + v}
+
+    val t4 = System.nanoTime()
     io.save(args(1), sorted_data)
+
+    val t5 = System.nanoTime()
+    val str = "terasort benchmark\n" +
+              "Elapsed time: " + (t2 - t1)/1e9 + "s to set up context\n" +
+              "Elapsed time: " + (t3 - t2)/1e9 + "s to load data\n" +
+              "Elapsed time: " + (t4 - t3)/1e9 + "s to finish alogrithm\n" +
+              "Elapsed time: " + (t5 - t4)/1e9 + "s to save the output\n\n" 
+    scala.tools.nsc.io.File("terasort.result").writeAll(str)
 
     sc.stop()
   }

@@ -74,6 +74,7 @@ object SparseNaiveBayes {
   }
 
   def run(params: Params) {
+    val t1 = System.nanoTime()
     val conf = new SparkConf().setAppName(s"SparseNaiveBayes with $params")
     val sc = new SparkContext(conf)
 
@@ -83,7 +84,10 @@ object SparseNaiveBayes {
       if (params.minPartitions > 0) params.minPartitions else sc.defaultMinPartitions
 
     // Generate vectors according to input documents
+    val t2 = System.nanoTime()
     val data = sc.sequenceFile[Text, Text](params.input).map{case (k, v) => (k.toString, v.toString)}
+
+    val t3 = System.nanoTime()
     val wordCount = data
       .flatMap{ case (key, doc) => doc.split(" ")}
       .map((_, 1L))
@@ -137,6 +141,13 @@ object SparseNaiveBayes {
     val accuracy = predictionAndLabel.filter(x => x._1 == x._2).count().toDouble / numTest
 
     println(s"Test accuracy = $accuracy.")
+
+    val t4 = System.nanoTime()
+    val str = "bayes benchmark\n" +
+              "Elapsed time: " + (t2 - t1)/1e9 + "s to set up context\n" +
+              "Elapsed time: " + (t3 - t2)/1e9 + "s to load data\n" +
+              "Elapsed time: " + (t4 - t3)/1e9 + "s to finish alogrithm\n\n\n"
+    scala.tools.nsc.io.File("bayes.result").writeAll(str)
 
     sc.stop()
   }

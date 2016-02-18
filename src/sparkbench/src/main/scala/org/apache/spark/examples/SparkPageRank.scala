@@ -43,6 +43,8 @@ object SparkPageRank {
       System.err.println("Usage: SparkPageRank <input_file> <output_filename> [<iter>]")
       System.exit(1)
     }
+
+    val t1 = System.nanoTime()
     val sparkConf = new SparkConf().setAppName("ScalaPageRank")
     val input_path = args(0)
     val output_path = args(1)
@@ -50,7 +52,10 @@ object SparkPageRank {
     val ctx = new SparkContext(sparkConf)
 
 //  Modified by Lv: accept last two values from HiBench generated PageRank data format
+    val t2 = System.nanoTime()
     val lines = ctx.textFile(input_path, 1)
+
+    val t3 = System.nanoTime()
     val links = lines.map{ s =>
       val elements = s.split("\\s+")
       val parts = elements.slice(elements.length - 2, elements.length)
@@ -68,9 +73,18 @@ object SparkPageRank {
 
 //    val output = ranks.collect()
 //    output.foreach(tup => println(tup._1 + " has rank: " + tup._2 + "."))
+    val t4 = System.nanoTime()
     val io = new IOCommon(ctx)
     io.save(output_path, ranks)
 //    ranks.saveAsTextFile(output_path)
+
+    val t5 = System.nanoTime()
+    val str = "pagerank benchmark\n" +
+              "Elapsed time: " + (t2 - t1)/1e9 + "s to set up context\n" +
+              "Elapsed time: " + (t3 - t2)/1e9 + "s to load data\n" +
+              "Elapsed time: " + (t4 - t3)/1e9 + "s to finish alogrithm\n" +
+              "Elapsed time: " + (t5 - t4)/1e9 + "s to save the output\n\n"
+    scala.tools.nsc.io.File("pagerank.result").writeAll(str)
 
     ctx.stop()
   }

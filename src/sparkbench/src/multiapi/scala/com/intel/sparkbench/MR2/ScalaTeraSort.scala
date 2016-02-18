@@ -38,23 +38,35 @@ object ScalaTeraSort {
       )
       System.exit(1)
     }
+
+    val t1 = System.nanoTime()
     val sparkConf = new SparkConf().setAppName("ScalaTeraSort")
     val sc = new SparkContext(sparkConf)
     val io = new IOCommon(sc)
 
     //val file = io.load[String](args(0), Some("Text"))
+    val t2 = System.nanoTime()
     val data = sc.newAPIHadoopFile[Text, Text, TeraInputFormat](args(0)).map{case (k,v)=>(k.getBytes, v.getBytes)}
     val parallel = sc.getConf.getInt("spark.default.parallelism", sc.defaultParallelism)
     val reducer  = IOCommon.getProperty("hibench.default.shuffle.parallelism")
       .getOrElse((parallel / 2).toString).toInt
 
+    val t3 = System.nanoTime()
     val partitioner = new BaseRangePartitioner(partitions = reducer, rdd = data)
     val ordered_data = new ConfigurableOrderedRDDFunctions[Array[Byte], Array[Byte], (Array[Byte], Array[Byte])](data)
     val sorted_data = ordered_data.sortByKeyWithPartitioner(partitioner = partitioner).map{case (k, v)=>(new Text(k), new Text(v))}
 
+    val t4 = System.nanoTime()
     sorted_data.saveAsNewAPIHadoopFile[TeraOutputFormat](args(1))
     //io.save(args(1), sorted_data)
 
+    val t5 = System.nanoTime()
+    val str = "terasort benchmark\n" +
+              "Elapsed time: " + (t2 - t1)/1e9 + "s to set up context\n" +
+              "Elapsed time: " + (t3 - t2)/1e9 + "s to load data\n" +
+              "Elapsed time: " + (t4 - t3)/1e9 + "s to finish alogrithm\n" +
+              "Elapsed time: " + (t5 - t4)/1e9 + "s to save the output\n\n" 
+    scala.tools.nsc.io.File("terasort.result").writeAll(str)
 
     sc.stop()
   }

@@ -32,15 +32,34 @@ object ScalaWordCount{
       )
       System.exit(1)
     }
+
+    val t1 = System.nanoTime()                                                                                
+
     val sparkConf = new SparkConf().setAppName("ScalaWordCount")
     val sc = new SparkContext(sparkConf)
 
+    val t2 = System.nanoTime()                                                                                
+
     val io = new IOCommon(sc)
     val data = io.load[String](args(0))
+    
+    val t3 = System.nanoTime()                                                                                
+
     val counts = data.flatMap(line => line.split(" "))
                      .map(word => (word, 1))
                      .reduceByKey(_ + _)
+
+    val t4 = System.nanoTime()                                                                                
     io.save(args(1), counts)
+
+    val t5 = System.nanoTime()
+    val str = "wordcount benchmark\n" +
+              "Elapsed time: " + (t2 - t1)/1e9 + "s to set up context\n" +
+              "Elapsed time: " + (t3 - t2)/1e9 + "s to load data\n" +
+              "Elapsed time: " + (t4 - t3)/1e9 + "s to finish alogrithm\n" +
+              "Elapsed time: " + (t5 - t4)/1e9 + "s to save the output\n\n" 
+    scala.tools.nsc.io.File("wordcount.result").writeAll(str)
+
     sc.stop()
   }
 }
