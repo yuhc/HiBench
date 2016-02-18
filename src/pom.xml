@@ -106,9 +106,7 @@
     </build>
 
     <modules>
-        <module>nutchindexing</module>
         <module>mahout</module>
-        <module>hivebench</module>
         <module>sparkbench</module>
         <module>pegasus</module>
         <module>autogen</module>
@@ -159,7 +157,6 @@
                 <property><name>!spark1.2</name></property>
             </activation>
 	    <modules>
-	      <module>streambench</module>
 	    </modules>
 
         </profile>
@@ -174,7 +171,6 @@
                 <property><name>spark1.4</name></property>
             </activation>
 	    <modules>
-	      <module>streambench</module>
 	    </modules>
 
         </profile>
@@ -189,7 +185,6 @@
                 <property><name>spark1.5</name></property>
             </activation>
 	    <modules>
-	      <module>streambench</module>
 	    </modules>
 
         </profile>
@@ -204,7 +199,6 @@
                 <property><name>spark1.6</name></property>
             </activation>
 	    <modules>
-	      <module>streambench</module>
 	    </modules>
 
         </profile>
