@@ -30,6 +30,9 @@ START_TIME=`timestamp`
 run-spark-job org.apache.spark.examples.mllib.DenseKMeans -k $K --numIterations $MAX_ITERATION $INPUT_HDFS/samples
 END_TIME=`timestamp`
 
+TOT_TIME=$((END_TIME-START_TIME)) 
+echo "Total elapsed time: $((TOT_TIME/1000)).$((TOT_TIME-TOT_TIME/1000*1000))s"
+
 gen_report ${START_TIME} ${END_TIME} ${SIZE}
 show_bannar finish
 leave_bench

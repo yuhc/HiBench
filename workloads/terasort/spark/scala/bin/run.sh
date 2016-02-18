@@ -29,6 +29,9 @@ START_TIME=`timestamp`
 run-spark-job com.intel.sparkbench.terasort.ScalaTeraSort $INPUT_HDFS $OUTPUT_HDFS
 END_TIME=`timestamp`
 
+TOT_TIME=$((END_TIME-START_TIME)) 
+echo "Total elapsed time: $((TOT_TIME/1000)).$((TOT_TIME-TOT_TIME/1000*1000))s"
+
 gen_report ${START_TIME} ${END_TIME} ${SIZE}
 show_bannar finish
 leave_bench
